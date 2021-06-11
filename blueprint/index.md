@@ -96,13 +96,13 @@ The 4 components of the query are:
 Once you have a JSON file ready, you can submit a query with the following command:
 
 ```bash
-gc usage query -f query-file.json
+gc usage query create -f query-file.json
 ```
 
 An alternative to having a file is building the JSON on-the-fly and piping it into gc. We've provided the following one-liner for this purpose where you can simply change the value of the jq arguments:
 
 ```bash
-echo {} | jq --arg interval "2021-01/2021-02" --arg granularity "Month" --argjson groupBy '["OAuthClientId"]' --argjson metrics '["Status200", "Status429"]' '.interval=$interval | if $ARGS.named.granularity != null then .granularity=$ARGS.named.granularity else . end | if $ARGS.named.groupBy != null then .groupBy=$ARGS.named.groupBy else . end | if $ARGS.named.metrics != null then .metrics=$ARGS.named.metrics else . end' | gc usage query
+echo {} | jq --arg interval "2021-01/2021-02" --arg granularity "Month" --argjson groupBy '["OAuthClientId"]' --argjson metrics '["Status200", "Status429"]' '.interval=$interval | if $ARGS.named.granularity != null then .granularity=$ARGS.named.granularity else . end | if $ARGS.named.groupBy != null then .groupBy=$ARGS.named.groupBy else . end | if $ARGS.named.metrics != null then .metrics=$ARGS.named.metrics else . end' | gc usage query create
 ```
 
 :::primary
@@ -123,7 +123,7 @@ Once you have submitted the query, the CLI should give you an output similar to 
 To retrieve the query, you need to present the `executionId` to the Usage API with the following command:
 
 ```bash
-gc usage results 7157a113-2751-4e38-85c4-c386cb9e22a4
+gc usage query results get 7157a113-2751-4e38-85c4-c386cb9e22a4
 ```
 
 If the query is not yet complete, you will get back a JSON payload indicating the query is `Running`:
@@ -184,7 +184,7 @@ Once the query is completed, the resulting data should be transformed into a dif
 To do this, you could run this one-liner which pipes the usage results into a jq transformation command, then finally saving the new format into a new file:
 
 ```bash
-gc usage results "7157a113-2751-4e38-85c4-c386cb9e22a4" | jq -c '.results[]' > query-result.json
+gc usage query results get "7157a113-2751-4e38-85c4-c386cb9e22a4" | jq -c '.results[]' > query-result.json
 ```
 
 Resulting file content:
@@ -249,7 +249,7 @@ Take the following example:
 Without the context from the original request, there's no way to tell if the status data enumerated are from the entire month or only for that specific day.
 
 :::primary
-**Note**: When using `granularity = "Month"`, it will always showw the first day of the month in the date property.
+**Note**: When using `granularity = "Month"`, it will always show the first day of the month in the date property.
 :::
 
 In order to partition our S3, all you need to do is create separate folders for them. An example structure would be like this, where JSON files will be uploaded according to the `granularity` property:
