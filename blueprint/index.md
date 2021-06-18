@@ -1,17 +1,14 @@
 ---
-title: Query your API usage using Genesys Cloud CLI and analyze it with AWS S3/Athena
+title: Query your API usage using the Genesys Cloud CLI and analyze it with AWS S3/Athena
 author: prince.merluza
 indextype: blueprint
 icon: blueprint
 image: images/card-image.png
 category: 6
 summary: |
-  This Genesys Cloud Developer Blueprint demonstrates how to query your organization's API usage, using the Genesys Cloud CLI. Analyzing your usage is essential in optimizing and scaling any solution that uses the API. This blueprint also demonstrates an example integration by exporting the information to an AWS S3 bucket and using AWS Athena to process queries against it.
+  This Genesys Cloud Developer Blueprint demonstrates how to use the Genesys Cloud CLI to query your organization's API usage. Analyzing API usage is essential to optimize and scale any solution that uses the API. The blueprint provides a sample workflow that shows you how to monitor and analyze usage for unexpected issues that have business impact, such as rate limiting. This enables you to adjust any affected applications promptly. This blueprint also includes an example integration that shows how to export the usage data to an AWS S3 bucket and use AWS Athena to process queries against it.
 ---
-
-This Genesys Cloud Developer Blueprint demonstrates how to query your organization's API usage, using the Genesys Cloud CLI. Analyzing your usage is essential in optimizing and scaling any solution that uses the API. This blueprint also demonstrates an example integration by exporting the information to an AWS S3 bucket and using AWS Athena to process queries against it.
-
-The objective of the solution is to provide a sample workflow where you can monitor, analyze, and adjust to changing growth patterns of your integration. This is not something that's often considered until it's 'too late' when there are unforeseen issues like regular rate-limitting which can impact the business. Having a system similar to this blueprint will help you track your API usage and prevent undesirable surprises caused by it.
+This Genesys Cloud Developer Blueprint demonstrates how to use the Genesys Cloud command line interface (CLI) to query your organization's API usage. Analyzing API usage is essential to optimize and scale any solution that uses the API. The blueprint provides a sample workflow that shows you how to monitor and analyze usage for unexpected issues that have business impact, such as rate limiting. This enables you to adjust any affected applications promptly. This blueprint also includes an example integration that shows how to export the usage data to an AWS S3 bucket and use AWS Athena to process queries against it.
 
 ![Diagram](images/overview.png)
 
@@ -21,14 +18,14 @@ The objective of the solution is to provide a sample workflow where you can moni
 
 ## Solution Components
 
-* **Genesys Cloud** - The Genesys cloud-based contact center platform.
-* **Genesys Cloud CLI** - A standalone CLI designed for interfacing with the Genesys Cloud API.
-* **jq** - jq is a lightweight and flexible command-line JSON processor. It's used to process and transform the JSON results from the Genesys Cloud API.
-* **Amazon S3** - Amazon Simple Storage Service (S3) is an object storage service. S3 buckets will host the JSON data for analysis and the results of AWS Athena queries.
-* **Amazon Athena** - Amazon Athena is a serverless, interactive query service to query data using standard SQL.
-* **AWS Glue** - AWS Glue is a serverless ETL service. A crawler is configured to crawl an S3 path and auto-generate tables from the data files.
-* **AWS CloudFormation** - AWS CloudFormation provides a template for you to model and provision AWS and third-party application resources in your cloud environment. An AWS CloudFormation template is provided to deploy the AWS components of the solution.
-* **AWS CLI** - The AWS Command Line Interface (CLI) is a unified tool to manage AWS services. In keeping with the 'command line' nature of the blueprint, this is used as an optional way to execute some of the implementation steps.
+* **Genesys Cloud** - A suite of Genesys cloud services for enterprise-grade communications, collaboration, and contact center management.
+* **Genesys Cloud CLI** - A standalone command line interface (CLI) designed for interfacing with the Genesys Cloud API.
+* **jq** - A lightweight and flexible command-line JSON processor. This blueprint uses it process and transform the JSON results from the Genesys Cloud API.
+* **Amazon S3** - Simple Storage Service, an object storage service in AWS. This blueprint uses S3 buckets to host JSON data for analysis and store the results of AWS Athena queries.
+* **Amazon Athena** - Amazon Athena is a serverless, interactive query service for querying data in Amazon S3 buckets using standard SQL.
+* **AWS Glue** - AWS Glue is a serverless data integration service that makes it easy to discover, prepare, and combine data for analytics, machine learning, and application development. This blueprint uses AWS Glue to auto-generate tables from your usage data files.
+* **AWS CloudFormation** - A management tool that uses templates to write, deploy, and maintain your AWS infrastructure. This blueprint includes an AWS CloudFormation template used to deploy the AWS components of the solution.
+* **AWS CLI** - The AWS Command Line Interface (CLI) is a unified tool to manage your AWS services. In keeping with the 'command line' nature of the blueprint, it uses the AWS CLI an optional way to execute some of the implementation steps.
 
 ## Prerequisites
 
@@ -42,7 +39,7 @@ The objective of the solution is to provide a sample workflow where you can moni
 * [Genesys Cloud CLI](https://developer.genesys.cloud/api/rest/command-line-interface/). For this blueprint, it's assumed that the binary is located in a PATH folder and is invokeable with `gc`. If it's set-up otherwise, you may need to modify some of the sample code in the implementation steps.
 * [jq - JSON Processor](https://stedolan.github.io/jq/). For this blueprint, it's assumed that the binary is located in a PATH folder and is invokeable with `jq`. If it's set-up otherwise, you may need to modify some of the sample code in the implementation steps.
 * [AWS CLI](https://aws.amazon.com/cli/).
-  
+
 ### Genesys Cloud account requirements
 
 This solution requires a Genesys Cloud license. For more information on licensing, see [Genesys Cloud Pricing](https://www.genesys.com/pricing "Opens the pricing article").
