@@ -12,6 +12,16 @@ This Genesys Cloud Developer Blueprint demonstrates how to use the Genesys Cloud
 
 ![Diagram](images/overview.png)
 
+## Scenario
+
+How can I monitor my API usage so I can adjust applications to keep from triggering rate limits or causing other performance deteriorations?
+
+## Solution
+
+Use the Genesys Cloud command line interface (CLI) to run a pre-configured JSON query that retrieves the data you need from the Usage API and sends it to an S3 bucket. There, a Glue job transforms the data so that an Athena query can retrieve it.
+
+## Contents
+
 * [Solution Components](#solution-components "Goes to the Solution Components section")
 * [Prerequisites](prerequisites "Goes to the Prerequisites section")
 * [Implementation Steps](#implementation-steps "Goes to the Implementation Steps section")
@@ -90,6 +100,10 @@ The 4 components of the query are:
     * Example: `2020-01-25/2020-03-10`
 
 2. `granularity` (optional). Specify whether to group the results by one of the following values:  `Day`, `Week`, or `Month`. If do not specify a value for granularity, all results in the specified interval are returned in a single group.
+
+    :::primary
+    **Note**: Although this parameter is optional, setting a `granularity` value enables you to add a granularity column to the table that Amazon Athena queries. If you do not set a `granularity` value - and use that value to partition your S3 bucket - a later user running an Athena query sees only the start date of the period you request in this initial query. They cannot determine the period the data applies to without referring back to this initial query.    
+    :::
 3. `groupBy` (array, optional). Behaves like the SQL GROUPBY command. Returns the query results grouped by the specified value. Valid values: OAuthClientId, OrganizationId, UserId, TemplateUri, HttpMethod.
 4. `metrics` (array, optional). Behaves like the SQL SELECT clause and returns only the usage values that correspond to the value or values you specify. If you do not specify a metric, the Usage API returns all results. Valid values: Status200, Status300, Status400, Status500, Status429, Requests.
 
@@ -171,6 +185,10 @@ Example of a completed query:
 }
 ```
 
+:::primary
+**Note**: The example query used above specifies the granularity as `Month`. Note that the response does not identify the granularity, which you need to know when you upload the JSON response to an S3 bucket in a subsequent step.
+:::
+
 This step retrieves the raw data you requested from the Usage API. The remaining sections of this blueprint explain how to upload that data for use with Amazon Athena, which enables you to efficiently query the data.
 
 ### Transform the JSON result for use with Amazon Athena
@@ -196,7 +214,7 @@ The following is an example of what the resulting file looks like:
 This blueprint includes an AWS CLoudFormation template that deploys an AWS stack containing the following resources for use in the remaining procedures:
 * S3 bucket for hosting raw JSON data
 * S3 bucket for results of Amazon Athena queries
-* Policy, Role, Database, and Crawler for AWS Glue
+* Policy, Role, Database, and Crawler configuration for AWS Glue
 * Athena Workgroup
 
 Download the template from the Git repository for this blueprint: [usage-api.template.yaml](https://github.com/GenesysCloudBlueprints/usage-api-blueprint/tree/main/blueprint/src "Opens the Git repository src folder for the Usage API Blueprint")
@@ -207,21 +225,21 @@ To deploy the template, complete the following procedure:
 2. Click the [CloudFormation service](https://console.aws.amazon.com/cloudformation/home#/stacks/create/template) to a create a new stack.
 3. Confirm the default selection of **Template is ready** and select **Upload a template file**.
 4. Upload the **usage-api.template.yaml** file you downloaded.
-5. Click **Next** to finish the process. There are no additional parameters to be configured.
+5. Click **Next** to finish the process. You do not need to configure any additional parameters.
 
 :::primary
-**Note**: The creation process can take several minutes. Make sure that it is completed before proceeding.
+**Note**: The creation process takes up to several minutes. Make sure that it is completed before proceeding.
 :::
 
 :::warning
-**Warning**: Most of the resources provisioned have explicitly set names for use in the following steps. If the creation process fails due to a naming conflict with existing objects, modify the template to eliminate the naming conflicts.
+**Warning**: Most of the resources provisioned have explicitly-set names for use in the following steps. If the creation process fails because of a naming conflict with existing objects, modify the template to eliminate the naming conflicts.
 :::
 
 ### Upload the transformed JSON to an S3 bucket
 
-If you have been following the same commands from the start, then you'll notice that we passed in a `granularity` value of `Month` for the usage query. Taking note of the value used is important, because you need to partition these files in the S3 buckets. The reason is that the properties of the query response have identical schema.
+This section explains how to use the `granularity` parameter set in the original query to partition your S3 bucket. The examples in this blueprint use the `Month` granularity value. When you set up a partition labeled `Month`, the AWS Glue Crawler adds a **Month** column to the table that Athena queries. In this way, any user who queries that table can identify the period the data is taken from.
 
-Take the following example:
+Example response:
 
 ```json
 {
@@ -237,13 +255,9 @@ Take the following example:
 }
 ```
 
-Without the context from the original request, there's no way to tell if the status data enumerated are from the entire month or only for that specific day.
+The use of the granularity parameter solves the problem presented by the JSON response returning a `date` value that is the first date in the granularity period. Without the context from the original request, there's no way to tell if the data in this SON response is for the entire month, for a week, for that specific day, or - if you did not specify a `granularity` value in the original query - for the entire period requested in the original query.
 
-:::primary
-**Note**: When using `granularity = "Month"`, it will always show the first day of the month in the date property.
-:::
-
-To partition the S3 bucket, create separate folders for the each granularity value. The following example shows the structure used when the JSON files are uploaded according to the `granularity` property:
+To partition the S3 bucket, create separate folders for the each granularity value you might want to use, as shown in the following example:
 
 ```bash
 s3://gc-usage-api-source/granularity=day/
@@ -252,20 +266,23 @@ s3://gc-usage-api-source/granularity=month/
 ```
 
 :::primary
-**Note**: AWS Glue produces a single table even if the files are in different folders. It adds a new column, `granularity`, which determines the granularity value of the partitioned entries.
+**Note**: AWS Glue produces a single table even if the files are in different folders. It adds a `granularity` column, which tells you which granularity the data in that row is for.
 :::
 
-If you have the AWS CLI configured and ready to use, you can simply call the following command from your command line. It automatically creates the required folder.
+If you have the AWS CLI configured and ready to use, you can simply call the following command from your command line. It automatically creates the required folder. To use other granularities, repeat the command, substituting the desired granularity for `month`.
 
 ```bash
 aws s3 cp query-result.json s3://gc-usage-api-source/granularity=month/
 ```
-
 If you prefer to use the web AWS Console, follow the instructions in [Step 2: Upload a File to Your Amazon S3 Bucket](https://docs.aws.amazon.com/quickstarts/latest/s3backup/step-2-upload-file.html) from the _AWS Quick Start Guide_.
 
 ### Run the AWS Glue crawler
 
-After you have uploaded all the data to the `gc-usage-api-source` S3 bucket, run the AWS Glue Crawler to generate the table definitions. This crawler is configured to run on demand. You must run it manually each time there is a change in the S3 bucket.
+The AWS Glue Crawler parses the data in the `gc-usage-api-source` S3 bucket and transforms it into a table having the format Amazon Athena requires. It establishes the column headings and populates the table with the values returned in the query response. 
+
+:::primary
+**Note**: This crawler is configured to run on demand. You must run it manually each time there is a change in the S3 bucket.
+:::
 
 Use the following command to run the crawler:
 
@@ -279,7 +296,7 @@ Depending on the amount of data, the crawler can take up to several minutes. To 
 aws glue get-crawler --name UsageApiCrawler | jq '.Crawler.State'
 ```
 
-If the crawler state is `READY`, you can use Athena to query your data.
+If the crawler state is `READY`, you can now use Athena to query your data.
 
 ### Run an Amazon Athena query
 
