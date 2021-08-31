@@ -1,48 +1,51 @@
 ---
-title: Query your API usage using Genesys Cloud CLI and analyze it with AWS S3/Athena
+title: Query your API usage using the Genesys Cloud CLI and analyze it with AWS S3/Athena
 author: prince.merluza
 indextype: blueprint
 icon: blueprint
 image: images/card-image.png
 category: 6
 summary: |
-  This Genesys Cloud Developer Blueprint demonstrates how to query your organization's API usage, using the Genesys Cloud CLI. Analyzing your usage is essential in optimizing and scaling any solution that uses the API. This blueprint also demonstrates an example integration by exporting the information to an AWS S3 bucket and using AWS Athena to process queries against it.
+  This Genesys Cloud Developer Blueprint demonstrates how to use the Genesys Cloud CLI to query your organization's API usage. Analyzing API usage is essential to optimize and scale any solution that uses the API. The blueprint provides a sample workflow that shows you how to monitor and analyze usage for unexpected issues that have business impact, such as rate limiting. This enables you to adjust any affected applications promptly. This blueprint also includes an example integration that shows how to export the usage data to an AWS S3 bucket and use AWS Athena to process queries against it.
 ---
-
-This Genesys Cloud Developer Blueprint demonstrates how to query your organization's API usage, using the Genesys Cloud CLI. Analyzing your usage is essential in optimizing and scaling any solution that uses the API. This blueprint also demonstrates an example integration by exporting the information to an AWS S3 bucket and using AWS Athena to process queries against it.
-
-The objective of the solution is to provide a sample workflow where you can monitor, analyze, and adjust to changing growth patterns of your integration. This is not something that's often considered until it's 'too late' when there are unforeseen issues like regular rate-limitting which can impact the business. Having a system similar to this blueprint will help you track your API usage and prevent undesirable surprises caused by it.
+This Genesys Cloud Developer Blueprint demonstrates how to use the Genesys Cloud command line interface (CLI) to query your organization's API usage. Analyzing API usage is essential to optimize and scale any solution that uses the API. The blueprint provides a sample workflow that shows you how to monitor and analyze usage for unexpected issues that have business impact, such as rate limiting. This enables you to adjust any affected applications promptly. This blueprint also includes an example integration that shows how to export the usage data to an AWS S3 bucket and use AWS Athena to process queries against it.
 
 ![Diagram](images/overview.png)
 
+## Scenario
+
+How can I monitor my API usage so I can adjust applications to keep from triggering rate limits or causing other performance deteriorations?
+
+## Solution
+
+Use the Genesys Cloud command line interface (CLI) to run a pre-configured JSON query that retrieves the data you need from the Genesys Cloud Usage API and sends it to an S3 bucket. There, an Amazon Glue job transforms the data so that an Amazon Athena query can retrieve it.
+
+## Contents
+
 * [Solution Components](#solution-components "Goes to the Solution Components section")
+* [Prerequisites](prerequisites "Goes to the Prerequisites section")
 * [Implementation Steps](#implementation-steps "Goes to the Implementation Steps section")
 * [Additional Resources](#additional-resources "Goes to the Additional Resources section")
 
 ## Solution Components
 
-* **Genesys Cloud** - The Genesys cloud-based contact center platform.
-* **Genesys Cloud CLI** - A standalone CLI designed for interfacing with the Genesys Cloud API.
-* **jq** - jq is a lightweight and flexible command-line JSON processor. It's used to process and transform the JSON results from the Genesys Cloud API.
-* **Amazon S3** - Amazon Simple Storage Service (S3) is an object storage service. S3 buckets will host the JSON data for analysis and the results of AWS Athena queries.
-* **Amazon Athena** - Amazon Athena is a serverless, interactive query service to query data using standard SQL.
-* **AWS Glue** - AWS Glue is a serverless ETL service. A crawler is configured to crawl an S3 path and auto-generate tables from the data files.
-* **AWS CloudFormation** - AWS CloudFormation provides a template for you to model and provision AWS and third-party application resources in your cloud environment. An AWS CloudFormation template is provided to deploy the AWS components of the solution.
-* **AWS CLI** - The AWS Command Line Interface (CLI) is a unified tool to manage AWS services. In keeping with the 'command line' nature of the blueprint, this is used as an optional way to execute some of the implementation steps.
+* **Genesys Cloud** - A suite of Genesys cloud services for enterprise-grade communications, collaboration, and contact center management.
+* **Genesys Cloud CLI** - A standalone command line interface (CLI) designed for interfacing with the Genesys Cloud API.
+* **jq** - A lightweight and flexible command-line JSON processor. This blueprint uses it process and transform the JSON results from the Genesys Cloud API.
+* **Amazon S3** - Simple Storage Service, an object storage service in AWS. This blueprint uses S3 buckets to host JSON data for analysis and store the results of AWS Athena queries.
+* **Amazon Athena** - A serverless, interactive query service for querying data in Amazon S3 buckets using standard SQL.
+* **AWS Glue** - A serverless data integration service that discovers, prepares, and combines data for analytics, machine learning, and application development. This blueprint uses AWS Glue to auto-generate tables from your usage data files.
+* **AWS CloudFormation** - A management tool that uses templates to write, deploy, and maintain your AWS infrastructure. This blueprint includes an AWS CloudFormation template used to deploy the AWS components of the solution.
+* **AWS CLI** - A unified tool to manage your AWS services from the command line. In keeping with the 'command line' nature of the blueprint, it uses the AWS CLI an optional way to execute some of the implementation steps.
 
 ## Prerequisites
 
-### Specialized Knowledge
-
-* Administrator-level knowledge of Genesys Cloud.
-* AWS Cloud Practitioner-level knowledge of AWS CloudFormation, Amazon S3, Amazon Athena, AWS Glue, and AWS CLI.
-
 ### Command Line Tools
 
-* [Genesys Cloud CLI](https://developer.genesys.cloud/api/rest/command-line-interface/). For this blueprint, it's assumed that the binary is located in a PATH folder and is invokeable with `gc`. If it's set-up otherwise, you may need to modify some of the sample code in the implementation steps.
-* [jq - JSON Processor](https://stedolan.github.io/jq/). For this blueprint, it's assumed that the binary is located in a PATH folder and is invokeable with `jq`. If it's set-up otherwise, you may need to modify some of the sample code in the implementation steps.
-* [AWS CLI](https://aws.amazon.com/cli/).
-  
+* [Introducing the Genesys Cloud CLI](https://developer.genesys.cloud/blog/2021-02-11-Introducing-the-CLI/ "Opens the Introducing the Genesys Cloud CLI page") -  This blueprint assumes that the binary for the Genesys Cloud CLI is located in a PATH folder and is invokeable with `gc`. If you set it up differently, modify the sample code in the **Implementation steps** section as necessary.
+* [jq - JSON Processor](https://stedolan.github.io/jq/ "Opens the jq GitHub repository") - This blueprint assumes that the jq binary is located in a PATH folder and is invokeable with `jq`. If you set it up differently, modify the sample code in the **Implementation steps** section as necessary.
+* [AWS CLI](https://aws.amazon.com/cli/ "Opens the AWS Command Line Interface page") - Follow the instructions at this link to set up the AWS CLI for use in this blueprint.
+
 ### Genesys Cloud account requirements
 
 This solution requires a Genesys Cloud license. For more information on licensing, see [Genesys Cloud Pricing](https://www.genesys.com/pricing "Opens the pricing article").
@@ -51,28 +54,35 @@ A recommended Genesys Cloud role for the solutions engineer is Master Admin. For
 
 ### AWS account requirements
 
-The solutions engineer requires an AWS account and administrator level credentials that allow:
+An AWS account and administrator level credentials that allow you to:
 
-* Working with AWS CloudFormation templates
-* Working with AWS IAM permissions
-* Creating Amazon S3 buckets
-* Creating an AWS Glue datatable and crawler
-* Creating an Athena Workgroup
+* Work with AWS CloudFormation templates
+* Work with AWS IAM permissions
+* Create Amazon S3 buckets
+* Create an AWS Glue datatable and crawler
+* Create an Amazon Athena workgroup
 
 ## Implementation Steps
 
 <!-- no toc -->
-* [Query Usage API](#query-usage-api)
-* [Poll the Query Status](#poll-the-query-status)
-* [Transform JSON result for use with Amazon Athena](#transform-json-result-for-use-with-amazon-athena)
-* [Deploy the AWS CloudFormation template](#deploy-the-aws-cloudformation-template)
-* [Upload transformed JSON to S3 bucket](#upload-transformed-json-to-s3-bucket)
-* [Run AWS Glue crawler](#run-aws-glue-crawler)
-* [Run an Amazon Athena Query](#run-an-amazon-athena-query)
+* [Query the Genesys Cloud Usage API](#query-the-genesys-cloud-usage-api "Goes to the Query the Genesys Cloud Usage API section") - Explains how to construct a JSON file to query the Usage API using the Genesys Cloud CLI
+* [Get the query status and results](#get-the-query-status-and-results "Goes to the Get the query status and results section")
+* [Transform the JSON result for use with Amazon Athena](#transform-the-json-result-for-use-with-amazon-athena "Goes to the Transform the JSON result for use with Amazon Athena section")
+* [Deploy the AWS CloudFormation template](#deploy-the-aws-cloudformation-template "Goes to the Deploy the AWS CloudFormation template section")
+* [Upload the transformed JSON to an S3 bucket](#upload-transformed-json-to-s3-bucket "Goes to the Upload the transformed JSON to an S3 bucket section")
+* [Run the AWS Glue crawler](#run-the-aws-glue-crawler "Goes to the Run the AWS Glue crawler section")
+* [Run an Amazon Athena query](#run-an-amazon-athena-query "Goes to the Run an Amazon Athena query section")
 
-### Query Usage API
+:::primary
+**Note**: This procedure assumes you have installed the Genesys Cloud CLI and jq.
+* If you have not already done so, set up the CLI using the instructions in [Command Line Interface (CLI)](https://developer.genesys.cloud/api/rest/command-line-interface/ "Opens the Command Line Interface (CLI) page") in the Developer Center. Configure it to respond to the command `gc`.
+* If you have not already done so, download jq from [download jq](https://stedolan.github.io/jq/download/ "Opens the download jq page"). Configure it to respond to the command `jq`.
 
-Before sending a query, you should first have a JSON file which contains the details for the query. The complete JSON body looks like this:
+:::
+
+### Query the Genesys Cloud Usage API
+
+The Genesys Cloud CLI takes a JSON file, named `query-file.json` in this blueprint, and uses it to query the Genesys Cloud Usage API without any need to write code to perform the query. The following code snippet shows the complete body of the JSON file:
 
 ```json
 {
@@ -85,31 +95,31 @@ Before sending a query, you should first have a JSON file which contains the det
 
 The 4 components of the query are:
 
-1. `interval` (required). Defines the time period where you want to get API usage data from. This value is a date range which follows the ISO-8601 date format.
+1. `interval` (required). Defines the time period for which you want to get API usage data. This value is a date range which follows the ISO-8601 date format.
 
-    * Ex. `2020-01-25/2020-03-10`
+    * Example: `2020-01-25/2020-03-10`
 
-2. `granularity` (optional). Allows you to break the results down into buckets of `Day`, `Week`, or `Month`. If this is not set, the results returned will contain the total values for the `interval` provided.
-3. `groupBy` (array, optional). Behaves like a SQL GROUPBY. Valid Values: OAuthClientId, OrganizationId, UserId, TemplateUri, HttpMethod
-4. `metrics` (array, optional). Behaves like a SQL SELECT clause. If omitted, all metrics will be returned. Valid Values: Status200, Status300, Status400, Status500, Status429, Requests
+2. `granularity` (optional). Specify whether to group the results by one of the following values:  `Day`, `Week`, or `Month`. If do not specify a value for granularity, all results in the specified interval are returned in a single group.
 
-Once you have a JSON file ready, you can submit a query with the following command:
+    :::primary
+    **Note**: Although this parameter is optional, setting a `granularity` value enables you to add a granularity column to the table that Amazon Athena queries. If you do not set a `granularity` value - and use that value to partition your S3 bucket - a later user running an Athena query sees only the start date of the period you request in this initial query. They cannot determine the period the data applies to without referring back to this initial query.    
+    :::
+3. `groupBy` (array, optional). Behaves like the SQL GROUPBY command. Returns the query results grouped by the specified value. Valid values: OAuthClientId, OrganizationId, UserId, TemplateUri, HttpMethod.
+4. `metrics` (array, optional). Behaves like the SQL SELECT clause and returns only the usage values that correspond to the value or values you specify. If you do not specify a metric, the Usage API returns all results. Valid values: Status200, Status300, Status400, Status500, Status429, Requests.
+
+After you create your JSON file, open the Genesys Cloud CLI and submit a query using the following command:
 
 ```bash
 gc usage query create -f query-file.json
 ```
 
-An alternative to having a file is building the JSON on-the-fly and piping it into gc. We've provided the following one-liner for this purpose where you can simply change the value of the jq arguments:
+Alternatively, you can build the JSON and invoke the CLI at the same time. The following one-line code example shows the format and jq arguments to use. To use the example, copy it and replace the argument values with those appropriate for your environment. Omit any optional arguments you don't need.
 
 ```bash
 echo {} | jq --arg interval "2021-01/2021-02" --arg granularity "Month" --argjson groupBy '["OAuthClientId"]' --argjson metrics '["Status200", "Status429"]' '.interval=$interval | if $ARGS.named.granularity != null then .granularity=$ARGS.named.granularity else . end | if $ARGS.named.groupBy != null then .groupBy=$ARGS.named.groupBy else . end | if $ARGS.named.metrics != null then .metrics=$ARGS.named.metrics else . end' | gc usage query create
 ```
 
-:::primary
-**Note**: For the one-liner, you could remove the optional arguments that you do not need.
-:::
-
-Once you have submitted the query, the CLI should give you an output similar to this:
+After you submit the query, the CLI returns an output similar to the following:
 
 ```json
 {
@@ -118,15 +128,15 @@ Once you have submitted the query, the CLI should give you an output similar to 
 }
 ```
 
-### Poll the Query Status
+### Get the query status and results
 
-To retrieve the query, you need to present the `executionId` to the Usage API with the following command:
+To retrieve the query, execute the following command to send the `executionId` value to the Usage API:
 
 ```bash
 gc usage query results get 7157a113-2751-4e38-85c4-c386cb9e22a4
 ```
 
-If the query is not yet complete, you will get back a JSON payload indicating the query is `Running`:
+If the query is not yet complete, the API returns the following JSON payload, indicating the query is in the `Running` status:
 
 ```json
 {
@@ -134,7 +144,7 @@ If the query is not yet complete, you will get back a JSON payload indicating th
 }
 ```
 
-If the query is completed, you will get a query payload back with the `queryStatus` equal to `Complete`. The payload will also contain the query results for the query submitted.
+If the query is completed, the API returns the following JSON payload indicating that the `queryStatus` is equal to `Complete`. The payload also contains the results for the query you submitted.
 
 Example of a completed query:
 
@@ -175,19 +185,23 @@ Example of a completed query:
 }
 ```
 
-By this step, you should already have the Usage API data that you need and can perform further analysis or transformation with it. The rest of the blueprint is optional but shows you how to load this data for use with Amazon Athena.
+:::primary
+**Note**: The example query used above specifies the granularity as `Month`. Note that the response does not identify the granularity, which you need to know when you upload the JSON response to an S3 bucket in a subsequent step.
+:::
 
-### Transform JSON result for use with Amazon Athena
+This step retrieves the raw data you requested from the Usage API. The remaining sections of this blueprint explain how to upload that data for use with Amazon Athena, which enables you to efficiently query the data.
 
-Once the query is completed, the resulting data should be transformed into a different JSON format where each record is its own line in the file.
+### Transform the JSON result for use with Amazon Athena
 
-To do this, you could run this one-liner which pipes the usage results into a jq transformation command, then finally saving the new format into a new file:
+To query the returned data with Amazon Athena, you must transform it into a JSON format where each record is on its own line. Athena requires this format.
+
+The following one-line code example shows how to pipe the results into a jq transformation command, and then to save the new format in a new file:
 
 ```bash
 gc usage query results get "7157a113-2751-4e38-85c4-c386cb9e22a4" | jq -c '.results[]' > query-result.json
 ```
 
-Resulting file content:
+The following is an example of what the resulting file looks like:
 
 ```json
 {"clientId":"d57acb58-54a8-44ce-bafa-0c273a357a94","clientName":"Sample Client Credentials","organizationId":"","userId":"","templateUri":"","httpMethod":"","status200":3,"status300":0,"status400":0,"status500":1,"status429":0,"requests":4,"date":"2021-01-12T00:00:00Z"}
@@ -195,47 +209,42 @@ Resulting file content:
 ...
 ```
 
-:::primary
-**Important**: This step and file format is required so you could use the JSON for Athena.
-:::
-
 ### Deploy the AWS CloudFormation template
 
-Download the template here: [usage-api.template.yaml](src/usage-api.template.yaml)
-
-The AWS CloudFormation template creates an AWS stack which contains the following Amazon resources:
-
+This blueprint includes an AWS CLoudFormation template that deploys an AWS stack containing the following resources for use in the remaining procedures:
 * S3 bucket for hosting raw JSON data
 * S3 bucket for results of Amazon Athena queries
-* Policy, Role, Database, and Crawler for AWS Glue
+* Policy, Role, Database, and Crawler configuration for AWS Glue
 * Athena Workgroup
 
-To deploy the template, complete the following:
+Download the template from the Git repository for this blueprint: [usage-api.template.yaml](https://github.com/GenesysCloudBlueprints/usage-api-blueprint/tree/main/blueprint/src "Opens the Git repository src folder for the Usage API Blueprint")
 
-1. Log into AWS console.
-2. Click on the [CloudFormation service](https://console.aws.amazon.com/cloudformation/home#/stacks/create/template) to a create a new stack.
-3. Confirm the default selections of **Template is ready** and select **Upload a template file**
-4. Upload the **usage-api.template.yaml** file you've downloaded earlier.
-5. Click **Next** and finish the process. There are no additional parameters to be configured.
+To deploy the template, complete the following procedure:
+
+1. Log into the AWS Console.
+2. Click the [CloudFormation service](https://console.aws.amazon.com/cloudformation/home#/stacks/create/template) to a create a new stack.
+3. Confirm the default selection of **Template is ready** and select **Upload a template file**.
+4. Upload the **usage-api.template.yaml** file you downloaded.
+5. Click **Next** to finish the process. You do not need to configure any additional parameters.
 
 :::primary
-**Note**: The creation process may take several minutes. Make sure that it's completed before proceeding.
+**Note**: The creation process takes up to several minutes. Make sure that it is completed before proceeding.
 :::
 
 :::warning
-**Warning**: Most of the resources provisioned have explicitly set names for use in the succeeding steps. If the creation process fails due to a naming conflict with existing objects, you may need to modify the template.
+**Warning**: Most of the resources provisioned have explicitly-set names for use in the following steps. If the creation process fails because of a naming conflict with existing objects, modify the template to eliminate the naming conflicts.
 :::
 
-### Upload transformed JSON to S3 bucket
+### Upload the transformed JSON to an S3 bucket
 
-If you have been following the same commands from the start, then you'll notice that we passed in a `granularity` value of `Month` for the usage query. Taking note of the value used is important, because you need to partition these files in the S3 buckets. The reason is that the properties of the query response have identical schema.
+This section explains how to use the `granularity` parameter set in the original query to partition your S3 bucket. The examples in this blueprint use the `Month` granularity value. When you set up a partition labeled `Month`, the AWS Glue Crawler adds a **Month** column to the table that Athena queries. In this way, any user who queries that table can identify the period the data is taken from.
 
-Take the following example:
+Example response:
 
 ```json
 {
   "clientId":"xxxxxxxx-eb18-4804-9ec9-5673e2a4b5f4",
-  "clientName":"Prince Client Credentials",
+  "clientName":"Sample Client Credentials",
   ... Other properties redacted for conciseness ...
   "status200":145,
   "status300":0,
@@ -246,13 +255,9 @@ Take the following example:
 }
 ```
 
-Without the context from the original request, there's no way to tell if the status data enumerated are from the entire month or only for that specific day.
+The use of the granularity parameter solves the problem presented by the JSON response returning a `date` value that is the first date in the granularity period. Without the context from the original request, there's no way to tell if the data in this JSON response is for the entire month, for a week, for that specific day, or - if you did not specify a `granularity` value in the original query - for the entire period requested in the original query.
 
-:::primary
-**Note**: When using `granularity = "Month"`, it will always show the first day of the month in the date property.
-:::
-
-In order to partition our S3, all you need to do is create separate folders for them. An example structure would be like this, where JSON files will be uploaded according to the `granularity` property:
+To partition the S3 bucket, create separate folders for the each granularity value you might want to use, as shown in the following example:
 
 ```bash
 s3://gc-usage-api-source/granularity=day/
@@ -261,47 +266,55 @@ s3://gc-usage-api-source/granularity=month/
 ```
 
 :::primary
-**Note**: AWS Glue will produce a single table even if the files are in different folders. A new column `granularity` will be available which determines the granularity value of the partitioned entries.
+**Note**: AWS Glue produces a single table even if the files are in different folders. It adds a `granularity` column, which tells you which granularity the data in that row is for.
 :::
 
-If you have the AWS CLI configured and ready to use, you can simply call this command from your command line (The folder will automatically be created):
+If you have the AWS CLI configured and ready to use, you can simply call the following command from your command line. It automatically creates the required folder. To use other granularities, repeat the command, substituting the desired granularity for `month`.
 
 ```bash
 aws s3 cp query-result.json s3://gc-usage-api-source/granularity=month/
 ```
+If you prefer to use the web AWS Console, follow the instructions in [Step 2: Upload a File to Your Amazon S3 Bucket](https://docs.aws.amazon.com/quickstarts/latest/s3backup/step-2-upload-file.html) from the _AWS Quick Start Guide_.
 
-If you prefer to use the web AWS Console, you can follow these [instructions](https://docs.aws.amazon.com/quickstarts/latest/s3backup/step-2-upload-file.html) from the AWS documentation.
+### Run the AWS Glue crawler
 
-### Run AWS Glue crawler
+The AWS Glue Crawler parses the data in the `gc-usage-api-source` S3 bucket and transforms it into a table having the format Amazon Athena requires. It establishes the column headings and populates the table with the values returned in the query response.
 
-Once all the data is uploaded to the `gc-usage-api-source` bucket, you need to run the crawler to generate the table definitions. This crawler is configured to run on demand so we need to manually run it everytime there is a change in the bucket.
+:::primary
+**Note**: This crawler is configured to run on demand. You must run it manually each time there is a change in the S3 bucket.
+:::
+
+Use the following command to run the crawler:
 
 ```bash
 aws glue start-crawler --name UsageApiCrawler
 ```
 
-Depending on the amount of data, the crawler can take up to several minutes. You can poll the status of the crawler with this one-liner:
+Depending on the amount of data, the crawler can take up to several minutes. To poll the status of the crawler, run the following command:
 
 ```bash
 aws glue get-crawler --name UsageApiCrawler | jq '.Crawler.State'
 ```
 
-If the crawler state is `READY`, then it can be used with Athena for querying.
+If the crawler state is `READY`, you can now use Athena to query your data.
 
-### Run an Amazon Athena Query
+### Run an Amazon Athena query
 
-Everything should now be set up for querying the data with Amazon Athena. In this example, we'll get the top 10 Authorization Clients with the most `Status429` value.
+Everything should now be set up for querying the data with Amazon Athena. The following example shows how to get the ten Authorization Clients that have the most occurrences of `Status429` (the error code for too many requests).
 
 ```bash
 aws athena start-query-execution --query-string "SELECT * FROM "genesysclouddb"."gc_usage_api_source" WHERE granularity='month' ORDER BY status429 DESC limit 10" --work-group "UsageAPIWorkgroup" --query-execution-context Database=genesyscloud,Catalog=AwsDataCatalog
 ```
 
-By default, queries will be saved to the `gc-usage-api-results` bucket.
-If everything's been setup sucessfully it'd be easy to integrate with other Amazon services.
+By default, your query results are saved to the `gc-usage-api-results` bucket.
+
+:::primary
+**Note**: If you have successfully set up this integration, you should now find it straightforward to integrate with other Amazon services.
+:::
 
 ## Additional Resources
 
-* [Genesys Cloud Developer Center](https://developer.mypurecloud.com/)
-* [Understanding your Genesys Cloud API usage](https://developer.mypurecloud.com/blog/2021-01-04-API-Usage/)
-* [Rate Limits](https://developer.genesys.cloud/api/rest/rate_limits)
-* [Amazon Athena - Best Practices for Reading JSON Data](https://docs.aws.amazon.com/athena/latest/ug/parsing-JSON.html)
+* [Genesys Cloud Developer Center](https://developer.genesys.cloud/ "Opens the Genesys Cloud Developer Center page")
+* [Understanding your Genesys Cloud API usage](https://developer.genesys.cloud/blog/2021-01-04-API-Usage/ "Opens the Understanding your Genesys Cloud API usage page")
+* [Rate Limits](https://developer.genesys.cloud/api/rest/rate_limits "Opens the Rate Limits page")
+* [Amazon Athena - Best Practices for Reading JSON Data](https://docs.aws.amazon.com/athena/latest/ug/parsing-JSON.html "Opens the Best Practices for Reading JSON Data page")
