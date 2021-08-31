@@ -18,7 +18,7 @@ How can I monitor my API usage so I can adjust applications to keep from trigger
 
 ## Solution
 
-Use the Genesys Cloud command line interface (CLI) to run a pre-configured JSON query that retrieves the data you need from the Usage API and sends it to an S3 bucket. There, a Glue job transforms the data so that an Athena query can retrieve it.
+Use the Genesys Cloud command line interface (CLI) to run a pre-configured JSON query that retrieves the data you need from the Genesys Cloud Usage API and sends it to an S3 bucket. There, an Amazon Glue job transforms the data so that an Amazon Athena query can retrieve it.
 
 ## Contents
 
@@ -34,7 +34,7 @@ Use the Genesys Cloud command line interface (CLI) to run a pre-configured JSON 
 * **jq** - A lightweight and flexible command-line JSON processor. This blueprint uses it process and transform the JSON results from the Genesys Cloud API.
 * **Amazon S3** - Simple Storage Service, an object storage service in AWS. This blueprint uses S3 buckets to host JSON data for analysis and store the results of AWS Athena queries.
 * **Amazon Athena** - A serverless, interactive query service for querying data in Amazon S3 buckets using standard SQL.
-* **AWS Glue** - A serverless data integration service that makes it easy to discover, prepare, and combine data for analytics, machine learning, and application development. This blueprint uses AWS Glue to auto-generate tables from your usage data files.
+* **AWS Glue** - A serverless data integration service that discovers, prepares, and combines data for analytics, machine learning, and application development. This blueprint uses AWS Glue to auto-generate tables from your usage data files.
 * **AWS CloudFormation** - A management tool that uses templates to write, deploy, and maintain your AWS infrastructure. This blueprint includes an AWS CloudFormation template used to deploy the AWS components of the solution.
 * **AWS CLI** - A unified tool to manage your AWS services from the command line. In keeping with the 'command line' nature of the blueprint, it uses the AWS CLI an optional way to execute some of the implementation steps.
 
@@ -42,8 +42,8 @@ Use the Genesys Cloud command line interface (CLI) to run a pre-configured JSON 
 
 ### Command Line Tools
 
-* [Introducing the Genesys Cloud CLI](https://developer.genesys.cloud/blog/2021-02-11-Introducing-the-CLI/ "Opens the Introducing the Genesys Cloud CLI page") -  This blueprint assumes that the binary for the Genesys Cloud CLI is located in a PATH folder and is invokeable with `gc`. If you set it up differently, modify the sample code in the implementation steps as necessary.
-* [jq - JSON Processor](https://stedolan.github.io/jq/ "Opens the jq GitHub repository") - This blueprint assumes that the jq binary is located in a PATH folder and is invokeable with `jq`. If you set it up differently, modify the sample code in the implementation steps as necessary.
+* [Introducing the Genesys Cloud CLI](https://developer.genesys.cloud/blog/2021-02-11-Introducing-the-CLI/ "Opens the Introducing the Genesys Cloud CLI page") -  This blueprint assumes that the binary for the Genesys Cloud CLI is located in a PATH folder and is invokeable with `gc`. If you set it up differently, modify the sample code in the **Implementation steps** section as necessary.
+* [jq - JSON Processor](https://stedolan.github.io/jq/ "Opens the jq GitHub repository") - This blueprint assumes that the jq binary is located in a PATH folder and is invokeable with `jq`. If you set it up differently, modify the sample code in the **Implementation steps** section as necessary.
 * [AWS CLI](https://aws.amazon.com/cli/ "Opens the AWS Command Line Interface page") - Follow the instructions at this link to set up the AWS CLI for use in this blueprint.
 
 ### Genesys Cloud account requirements
@@ -60,7 +60,7 @@ An AWS account and administrator level credentials that allow you to:
 * Work with AWS IAM permissions
 * Create Amazon S3 buckets
 * Create an AWS Glue datatable and crawler
-* Create an Athena Workgroup
+* Create an Amazon Athena workgroup
 
 ## Implementation Steps
 
@@ -82,7 +82,7 @@ An AWS account and administrator level credentials that allow you to:
 
 ### Query the Genesys Cloud Usage API
 
-The Genesys Cloud CLI takes a JSON file, named query-file.json in this blueprint, and uses it to query the Genesys Cloud Usage API without any need to write code to perform the query. The following code shows the complete body of the JSON file:
+The Genesys Cloud CLI takes a JSON file, named `query-file.json` in this blueprint, and uses it to query the Genesys Cloud Usage API without any need to write code to perform the query. The following code snippet shows the complete body of the JSON file:
 
 ```json
 {
@@ -255,7 +255,7 @@ Example response:
 }
 ```
 
-The use of the granularity parameter solves the problem presented by the JSON response returning a `date` value that is the first date in the granularity period. Without the context from the original request, there's no way to tell if the data in this SON response is for the entire month, for a week, for that specific day, or - if you did not specify a `granularity` value in the original query - for the entire period requested in the original query.
+The use of the granularity parameter solves the problem presented by the JSON response returning a `date` value that is the first date in the granularity period. Without the context from the original request, there's no way to tell if the data in this JSON response is for the entire month, for a week, for that specific day, or - if you did not specify a `granularity` value in the original query - for the entire period requested in the original query.
 
 To partition the S3 bucket, create separate folders for the each granularity value you might want to use, as shown in the following example:
 
@@ -278,7 +278,7 @@ If you prefer to use the web AWS Console, follow the instructions in [Step 2: Up
 
 ### Run the AWS Glue crawler
 
-The AWS Glue Crawler parses the data in the `gc-usage-api-source` S3 bucket and transforms it into a table having the format Amazon Athena requires. It establishes the column headings and populates the table with the values returned in the query response. 
+The AWS Glue Crawler parses the data in the `gc-usage-api-source` S3 bucket and transforms it into a table having the format Amazon Athena requires. It establishes the column headings and populates the table with the values returned in the query response.
 
 :::primary
 **Note**: This crawler is configured to run on demand. You must run it manually each time there is a change in the S3 bucket.
