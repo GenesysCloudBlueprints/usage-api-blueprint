@@ -3,7 +3,7 @@ title: Query your API usage using the Genesys Cloud CLI and analyze it with AWS 
 author: prince.merluza
 indextype: blueprint
 icon: blueprint
-image: images/card-image.png
+image: images/overview.png
 category: 6
 summary: |
   This Genesys Cloud Developer Blueprint demonstrates how to use the Genesys Cloud CLI to query your organization's API usage. Analyzing API usage is essential to optimize and scale any solution that uses the API. The blueprint provides a sample workflow that shows you how to monitor and analyze usage for unexpected issues that have business impact, such as rate limiting. This enables you to adjust any affected applications promptly. This blueprint also includes an example integration that shows how to export the usage data to an AWS S3 bucket and use AWS Athena to process queries against it.
