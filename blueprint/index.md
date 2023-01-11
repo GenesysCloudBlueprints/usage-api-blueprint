@@ -6,8 +6,16 @@ icon: blueprint
 image: images/card-image.png
 category: 6
 summary: |
-  This Genesys Cloud Developer Blueprint demonstrates how to use the Genesys Cloud CLI to query your organization's API usage. Analyzing API usage is essential to optimize and scale any solution that uses the API. The blueprint provides a sample workflow that shows you how to monitor and analyze usage for unexpected issues that have business impact, such as rate limiting. This enables you to adjust any affected applications promptly. This blueprint also includes an example integration that shows how to export the usage data to an AWS S3 bucket and use AWS Athena to process queries against it.
+ This Genesys Cloud Developer Blueprint demonstrates how to use the Genesys Cloud CLI to query your organization's API usage. Analyzing API usage is essential to optimize and scale any solution that uses the API. The blueprint provides a sample workflow that shows you how to monitor and analyze usage for unexpected issues that have business impact, such as rate limiting. This enables you to adjust any affected applications promptly. This blueprint also includes an example integration that shows how to export the usage data to an AWS S3 bucket and use AWS Athena to process queries against it.
 ---
+:::{"alert":"primary","title":"About Genesys Cloud Blueprints","autoCollapse":false} 
+Genesys Cloud blueprints were built to help you jump-start building an application or integrating with a third-party partner. 
+Blueprints are meant to outline how to build and deploy your solutions, not a production-ready turn-key solution.
+ 
+For more details on Genesys Cloud blueprint support and practices 
+please see our Genesys Cloud blueprint [FAQ](https://developer.genesys.cloud/blueprints/faq)sheet.
+:::
+
 This Genesys Cloud Developer Blueprint demonstrates how to use the Genesys Cloud command line interface (CLI) to query your organization's API usage. Analyzing API usage is essential to optimize and scale any solution that uses the API. The blueprint provides a sample workflow that shows you how to monitor and analyze usage for unexpected issues that have business impact, such as rate limiting. This enables you to adjust any affected applications promptly. This blueprint also includes an example integration that shows how to export the usage data to an AWS S3 bucket and use AWS Athena to process queries against it.
 
 ![Diagram](images/overview.png)
