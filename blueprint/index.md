@@ -31,7 +31,7 @@ Use the Genesys Cloud command line interface (CLI) to run a pre-configured JSON 
 ## Contents
 
 * [Solution Components](#solution-components "Goes to the Solution Components section")
-* [Prerequisites](prerequisites "Goes to the Prerequisites section")
+* [Prerequisites](#prerequisites "Goes to the Prerequisites section")
 * [Implementation Steps](#implementation-steps "Goes to the Implementation Steps section")
 * [Additional Resources](#additional-resources "Goes to the Additional Resources section")
 
@@ -77,7 +77,7 @@ An AWS account and administrator level credentials that allow you to:
 * [Get the query status and results](#get-the-query-status-and-results "Goes to the Get the query status and results section")
 * [Transform the JSON result for use with Amazon Athena](#transform-the-json-result-for-use-with-amazon-athena "Goes to the Transform the JSON result for use with Amazon Athena section")
 * [Deploy the AWS CloudFormation template](#deploy-the-aws-cloudformation-template "Goes to the Deploy the AWS CloudFormation template section")
-* [Upload the transformed JSON to an S3 bucket](#upload-transformed-json-to-s3-bucket "Goes to the Upload the transformed JSON to an S3 bucket section")
+* [Upload the transformed JSON to an S3 bucket](#upload-the-transformed-json-to-an-s3-bucket "Goes to the Upload the transformed JSON to an S3 bucket section")
 * [Run the AWS Glue crawler](#run-the-aws-glue-crawler "Goes to the Run the AWS Glue crawler section")
 * [Run an Amazon Athena query](#run-an-amazon-athena-query "Goes to the Run an Amazon Athena query section")
 
